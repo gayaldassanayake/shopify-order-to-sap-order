@@ -1,9 +1,5 @@
 import ballerina/http;
 import ballerina/log;
-import ballerinax/salesforce as sf;
-
-configurable sf:ConnectionConfig salesforceConfig = ?;
-sf:Client salesforce = check new (salesforceConfig);
 
 type ShopifyCustomer record {
     string email;
@@ -21,7 +17,7 @@ type Address record {
     string zip;
 };
 
-service /salesforce_bridge on new http:Listener(9090) {
+service /sap_bridge on new http:Listener(9090) {
     resource function post customers(@http:Payload ShopifyCustomer shopifyCustomer) {
         log:printInfo("Received customer: " + shopifyCustomer.toJsonString());
     }
