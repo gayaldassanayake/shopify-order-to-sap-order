@@ -1,35 +1,28 @@
+import ballerina/http;
 import ballerina/log;
-import ballerinax/trigger.shopify;
+import ballerinax/salesforce as sf;
 
-configurable string shopifyApiSecretKey = ?;
+configurable sf:ConnectionConfig salesforceConfig = ?;
+sf:Client salesforce = check new (salesforceConfig);
 
-shopify:ListenerConfig shopifyListenerConfig = {
-    apiSecretKey: shopifyApiSecretKey
+type ShopifyCustomer record {
+    string email;
+    string first_name?;
+    string last_name?;
+    Address default_address?;
 };
 
-listener shopify:Listener shopifyListener = new(shopifyListenerConfig);
+type Address record {
+    int id;
+    string address1;
+    string address2;
+    string city;
+    string country;
+    string zip;
+};
 
-service shopify:OrdersService on shopifyListener {
-    remote function onOrdersCreate(shopify:OrderEvent event) returns error? {
-        string odrerNumber = event?.name.toString();
-        string currency = event?.presentment_currency.toString();
-        string totalPrice = event?.total_price.toString();
-        string message = "Order No: " + odrerNumber + " Total Price: " + currency + totalPrice;
-        log:printInfo(message);
-    }
-    remote function onOrdersCancelled(shopify:OrderEvent event) returns error? {
-        // Write your logic here
-    }
-    remote function onOrdersFulfilled(shopify:OrderEvent event) returns error? {
-        // Write your logic here
-    }
-    remote function onOrdersPaid(shopify:OrderEvent event) returns error? {
-        // Write your logic here
-    }
-    remote function onOrdersPartiallyFulfilled(shopify:OrderEvent event) returns error? {
-        // Write your logic here
-    }
-    remote function onOrdersUpdated(shopify:OrderEvent event) returns error? {
-        // Write your logic here
+service /salesforce_bridge on new http:Listener(9090) {
+    resource function post customers(@http:Payload ShopifyCustomer shopifyCustomer) {
+        log:printInfo("Received customer: " + shopifyCustomer.toJsonString());
     }
 }
