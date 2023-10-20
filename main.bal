@@ -17,8 +17,15 @@ type Address record {
     string zip;
 };
 
+type ShopifyOrder record {
+};
+
 service /sap_bridge on new http:Listener(9090) {
     resource function post customers(@http:Payload ShopifyCustomer shopifyCustomer) {
         log:printInfo("Received customer: " + shopifyCustomer.toJsonString());
+    }
+
+    resource function post orders(@http:Payload ShopifyOrder shopifyOrder) {
+        log:printInfo("Received order: " + shopifyOrder.toJsonString());
     }
 }
