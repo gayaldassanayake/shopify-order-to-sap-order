@@ -40,3 +40,8 @@ type OrderItem record {
     string DocumentCurrency; //
     string TaxJurisdiction; // Map according to the country
 };
+
+type SAPAuthConfig record {|
+    string username;
+    string password;
+|};
