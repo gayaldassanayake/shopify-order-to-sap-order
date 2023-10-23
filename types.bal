@@ -1,8 +1,7 @@
 type ShopifyOrder record {
-    // string confirmation_number?;
-    // string company?;
-    // string currency?;
-    // Customer customer?;
+    string confirmation_number?;
+    string currency?;
+    Customer customer?;
     // LineItem[] line_items?;
 };
 
