@@ -42,37 +42,26 @@ isolated function getSAPHttpClient() returns http:Client|error {
 function transformCustomerData(ShopifyOrder shopifyOrder) returns SAPPurchaseOrder|error {
     string purchaseOrderType = "NB";
     string supplier = supplierMap.get(shopifyOrder.customer.id.toString());
-    string organization = organizationMap.get(shopifyOrder.customer.default_address.company);
-    string group = groupMap.get(shopifyOrder.customer.default_address.company);
-    string companyCode = organizationMap.get(shopifyOrder.customer.default_address.company);
-
-    // TODO: check the ability to use the same variable instead of getting the same thing again
-    string plant = organizationMap.get(shopifyOrder.customer.default_address.company);
-    string taxJurisdiction = taxJurisdictionMap.get(shopifyOrder.customer.default_address.country);
+    string company = shopifyOrder.customer.default_address.company;
+    string organization = organizationMap.get(company);
+    string group = groupMap.get(company);
+    string companyCode = organizationMap.get(company);
+    string plant = organizationMap.get(company);
     string currency = shopifyOrder.currency;
+    string taxJurisdiction = taxJurisdictionMap.get(shopifyOrder.customer.default_address.country);
 
-    OrderItem[] orderItems = [];
-
-    // TODO: use query instead
-    // TODO: simplify the variable names
-    foreach LineItem lineItem in shopifyOrder.line_items {
-        int quantity = lineItem.quantity;
-        string unit = "kg"; // TODO: use a constant
-        string category = "U";
-        string material = materialMap.get(lineItem.product_id.toString());
-        float price = check float:fromString(lineItem.price);
-
-        orderItems.push({
+    OrderItem[] orderItems = from LineItem lineItem in shopifyOrder.line_items
+        select
+        {
             Plant: plant,
-            OrderQuantity: quantity,
-            PurchaseOrderQuantityUnit: unit,
-            AccountAssignmentCategory: category,
-            Material: material,
-            NetPriceAmount: price,
+            OrderQuantity: lineItem.quantity,
+            PurchaseOrderQuantityUnit: "kg",
+            AccountAssignmentCategory: "U",
+            Material: materialMap.get(lineItem.product_id.toString()),
+            NetPriceAmount: check float:fromString(lineItem.price),
             DocumentCurrency: currency,
             TaxJurisdiction: taxJurisdiction
-        });
-    }
+        };
     return {
         PurchaseOrderType: purchaseOrderType,
         Supplier: supplier,
