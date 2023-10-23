@@ -10,7 +10,7 @@ map<string> taxJurisdictionMap = {"United States": "KY00000000"};
 
 service /sap_bridge on new http:Listener(9090) {
     resource function post orders(@http:Payload ShopifyOrder shopifyOrder) {
-        log:printInfo("Received order: " + shopifyOrder.toJsonString());
+        log:printInfo("Received order with confirmation number: " + shopifyOrder.confirmation_number);
         SAPPurchaseOrder|error sapOrder = transformCustomerData(shopifyOrder);
         if sapOrder is error {
             log:printError("Error while transforming order: " + sapOrder.message());
@@ -29,8 +29,9 @@ function transformCustomerData(ShopifyOrder shopifyOrder) returns SAPPurchaseOrd
 
     // TODO: check the ability to use the same variable instead of getting the same thing again
     string plant = organizationMap.get(shopifyOrder.customer.default_address.company);
+    string taxJurisdiction = taxJurisdictionMap.get(shopifyOrder.customer.default_address.country);
+    string currency = shopifyOrder.currency;
 
-    string taxJurisdiction = shopifyOrder.customer.default_address.country;
     OrderItem[] orderItems = [];
 
     // TODO: use query instead
@@ -41,7 +42,6 @@ function transformCustomerData(ShopifyOrder shopifyOrder) returns SAPPurchaseOrd
         string category = "U";
         string material = materialMap.get(lineItem.product_id.toString());
         float price = check float:fromString(lineItem.price);
-        string currency = lineItem.presentment_currency;
 
         orderItems.push({
             Plant: plant,

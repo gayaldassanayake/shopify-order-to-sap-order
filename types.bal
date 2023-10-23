@@ -1,5 +1,7 @@
 type ShopifyOrder record {
+    string confirmation_number;
     string company;
+    string currency;
     Customer customer;
     LineItem[] line_items;
 };
@@ -7,7 +9,6 @@ type ShopifyOrder record {
 type LineItem record {
     string price;
     int quantity;
-    string presentment_currency;
     int product_id; // maps to Material
 };
 
